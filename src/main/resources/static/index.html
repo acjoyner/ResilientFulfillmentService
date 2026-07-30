@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resilient Fulfillment Service | Enterprise Microservice Dashboard</title>
+    <meta name="description" content="Interactive demonstration dashboard for Resilient Fulfillment Microservice featuring Resilience4j Circuit Breakers, Redis Caching, PostgreSQL Transactions, and APM Metrics.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-card: rgba(22, 30, 49, 0.75);
+            --bg-card-hover: rgba(30, 41, 67, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-primary: #6366f1;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+            padding-bottom: 60px;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.4rem;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #d1d5db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--success-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            box-shadow: 0 0 10px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        main {
+            max-width: 1300px;
+            margin: 2.5rem auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 992px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.75rem;
+            backdrop-filter: blur(16px);
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card-title-icon {
+            color: var(--accent-primary);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Interactive Simulation Controls */
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .btn-control {
+            position: relative;
+            background: rgba(30, 41, 67, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-control::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-primary);
+            transition: width 0.25s ease;
+        }
+
+        .btn-control:hover {
+            transform: translateY(-3px);
+            background: rgba(39, 54, 86, 0.8);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-control:hover::before {
+            width: 8px;
+        }
+
+        .btn-control.success::before { background: var(--success-color); }
+        .btn-control.warning::before { background: var(--warning-color); }
+        .btn-control.danger::before { background: var(--danger-color); }
+        .btn-control.info::before { background: #3b82f6; }
+
+        .btn-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* Tooltip Component */
+        .tooltip-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.4rem;
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+
+        .tooltip-trigger:hover {
+            background: var(--accent-primary);
+            color: #ffffff;
+        }
+
+        .has-tooltip {
+            position: relative;
+        }
+
+        .tooltip-box {
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%) translateY(6px);
+            width: 280px;
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .tooltip-box::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1e293b transparent transparent transparent;
+        }
+
+        .tooltip-box strong {
+            color: #38bdf8;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .has-tooltip:hover .tooltip-box {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Console Output Viewer */
+        .console-container {
+            background: #070a12;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 1.25rem;
+            font-family: var(--font-code);
+            font-size: 0.85rem;
+            height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .console-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .console-log {
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            line-height: 1.5;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .console-log.info { background: rgba(59, 130, 246, 0.08); color: #93c5fd; }
+        .console-log.success { background: rgba(16, 185, 129, 0.08); color: #6ee7b7; }
+        .console-log.warning { background: rgba(245, 158, 11, 0.08); color: #fde047; }
+        .console-log.danger { background: rgba(239, 68, 68, 0.08); color: #fca5a5; }
+
+        /* Dashboard Links Grid */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .link-card {
+            background: rgba(30, 41, 67, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        .link-card:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateX(4px);
+        }
+
+        .link-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            font-size: 1.1rem;
+        }
+
+        .link-text h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .link-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Objectives Section */
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .objective-card {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .objective-tag {
+            align-self: flex-start;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+        .objective-card h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .objective-card p {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Banner -->
+    <header>
+        <div class="header-container">
+            <div class="logo-group">
+                <div class="logo-icon">⚡</div>
+                <div class="logo-text">
+                    <h1>Resilient Fulfillment Service</h1>
+                    <p>Enterprise Microservice Architecture & Learning Dashboard</p>
+                </div>
+            </div>
+            <div class="status-badge" id="statusBadge">
+                <div class="status-dot"></div>
+                <span id="statusText">Service Online</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Interactive Controls Card -->
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">🎮</span> Simulation & Scenario Testing
+                </div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Hover controls for Learning Objectives</span>
+            </div>
+            <div class="control-grid">
+                
+                <!-- Button 1: Normal Order -->
+                <button class="btn-control success has-tooltip" onclick="triggerOrder('PROD-100', 2, 49.99)">
+                    <div class="tooltip-box">
+                        <strong>🎯 Learning Objective: SQL + NoSQL Cache</strong>
+                        Demonstrates 2-step order persistence: 1) Redis cache check/update (ProductCache, TTL 600s), 2) PostgreSQL transaction write with status FULFILLED.
+                    </div>
+                    <div class="btn-title">
+                        <span>🟢 Process Normal Order</span>
+                        <span class="tooltip-trigger">?</span>
+                    </div>
+                    <div class="btn-desc">PostgreSQL Transaction + Redis Caching (PROD-100)</div>
+                </button>
+
+                <!-- Button 2: Downstream Failure / Circuit Breaker -->
+                <button class="btn-control danger has-tooltip" onclick="triggerOrder('PROD-FAIL', 1, 100.00)">
+                    <div class="tooltip-box">
+                        <strong>🎯 Learning Objective: Resilience4j Circuit Breaker</strong>
+                        Simulates downstream Inventory Service failure. Resilience4j catches exception and falls back to saving order as FALLBACK_PROCESSING without data loss.
+                    </div>
+                    <div class="btn-title">
+                        <span>🔴 Trigger Circuit Breaker</span>
+                        <span class="tooltip-trigger">?</span>
+                    </div>
+                    <div class="btn-desc">Downstream Exception Fallback (PROD-FAIL)</div>
+                </button>
+
+                <!-- Button 3: Latency & Bulkhead -->
+                <button class="btn-control warning has-tooltip" onclick="triggerOrder('PROD-SLOW', 1, 89.99)">
+                    <div class="tooltip-box">
+                        <strong>🎯 Learning Objective: Bulkhead Concurrency Cap</strong>
+                        Simulates 3000ms network latency. Tests Bulkhead maxConcurrentCalls=5 limits and slow-call rate thresholds.
+                    </div>
+                    <div class="btn-title">
+                        <span>🟡 Trigger Latency Spike</span>
+                        <span class="tooltip-trigger">?</span>
+                    </div>
+                    <div class="btn-desc">3000ms Delay & Bulkhead Test (PROD-SLOW)</div>
+                </button>
+
+                <!-- Button 4: System Health Check -->
+                <button class="btn-control info has-tooltip" onclick="checkHealth()">
+                    <div class="tooltip-box">
+                        <strong>🎯 Learning Objective: System Diagnostic API</strong>
+                        Calls /api/v1/orders/health to verify service uptime, JVM status, and application timestamp.
+                    </div>
+                    <div class="btn-title">
+                        <span>🔵 System Health Check</span>
+                        <span class="tooltip-trigger">?</span>
+                    </div>
+                    <div class="btn-desc">Verify Java Process Uptime</div>
+                </button>
+
+            </div>
+        </section>
+
+        <!-- Live Output Console Card -->
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">💻</span> Live API Execution Console
+                </div>
+                <button onclick="clearConsole()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem;">Clear Console</button>
+            </div>
+            <div class="console-container" id="console">
+                <div class="console-header">
+                    <span>[SYSTEM LOG STREAM]</span>
+                    <span>Format: JSON / MDC Trace</span>
+                </div>
+                <div class="console-log info">Console initialized. Ready to execute interactive test scenarios. Click any control button to test endpoints.</div>
+            </div>
+        </section>
+
+        <!-- Monitoring & Endpoint Dashboard Links -->
+        <section class="card full-width">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">🔗</span> Quick-Access Dashboards & Endpoints
+                </div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Direct Links to Observability Metrics</span>
+            </div>
+            <div class="links-grid">
+                
+                <a href="/actuator/prometheus" target="_blank" class="link-card">
+                    <div class="link-icon">📊</div>
+                    <div class="link-text">
+                        <h4>Prometheus APM Metrics</h4>
+                        <p>/actuator/prometheus</p>
+                    </div>
+                </a>
+
+                <a href="/actuator/health" target="_blank" class="link-card">
+                    <div class="link-icon">💓</div>
+                    <div class="link-text">
+                        <h4>Actuator Health</h4>
+                        <p>/actuator/health</p>
+                    </div>
+                </a>
+
+                <a href="/actuator/metrics/resilience4j.circuitbreaker.state" target="_blank" class="link-card">
+                    <div class="link-icon">⚡</div>
+                    <div class="link-text">
+                        <h4>Circuit Breaker Metrics</h4>
+                        <p>/actuator/metrics/resilience4j...</p>
+                    </div>
+                </a>
+
+                <a href="/api/v1/orders" target="_blank" class="link-card">
+                    <div class="link-icon">🗄️</div>
+                    <div class="link-text">
+                        <h4>List All SQL Orders</h4>
+                        <p>/api/v1/orders</p>
+                    </div>
+                </a>
+
+                <a href="/api/v1/orders/health" target="_blank" class="link-card">
+                    <div class="link-icon">🚀</div>
+                    <div class="link-text">
+                        <h4>Service Health API</h4>
+                        <p>/api/v1/orders/health</p>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- Learning Objectives Summary -->
+        <section class="card full-width">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">🎓</span> System Design & Microservice Learning Objectives
+                </div>
+            </div>
+            <div class="objectives-grid">
+                
+                <div class="objective-card">
+                    <span class="objective-tag">Microservices Resilience</span>
+                    <h3>Bulkhead & Circuit Breaker Patterns</h3>
+                    <p>Uses Resilience4j to isolate downstream service calls. When failure rates exceed 50% or latency spikes occur, the circuit opens to fast-fail requests, preventing thread exhaustion.</p>
+                </div>
+
+                <div class="objective-card">
+                    <span class="objective-tag">Dual Persistence Strategy</span>
+                    <h3>PostgreSQL (SQL) + Redis (NoSQL)</h3>
+                    <p>Combines transactional ACID guarantees in PostgreSQL (fulfillment_orders) with high-speed Redis caching (ProductCache, TTL 600s) for low-latency product catalog lookups.</p>
+                </div>
+
+                <div class="objective-card">
+                    <span class="objective-tag">Observability & APM</span>
+                    <h3>Dynatrace Metrics & Splunk Logs</h3>
+                    <p>Instruments Spring Boot Actuator with Micrometer metrics (Prometheus format) and outputs structured JSON Logback logs with MDC trace IDs for Splunk log aggregation.</p>
+                </div>
+
+                <div class="objective-card">
+                    <span class="objective-tag">Infrastructure Automation</span>
+                    <h3>RHEL 8/9 systemd & OpenShift</h3>
+                    <p>Includes systemd daemon installer scripts (scripts/rhel-systemd-setup.sh), host diagnostic tools (scripts/rhel-health-check.sh), and OpenShift cloud deployment manifests.</p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const consoleEl = document.getElementById('console');
+
+        function appendLog(message, type = 'info') {
+            const time = new Date().toISOString().split('T')[1].slice(0, 12);
+            const logEntry = document.createElement('div');
+            logEntry.className = `console-log ${type}`;
+            logEntry.textContent = `[${time}] ${message}`;
+            consoleEl.appendChild(logEntry);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleEl.innerHTML = '<div class="console-header"><span>[SYSTEM LOG STREAM]</span><span>Format: JSON / MDC Trace</span></div>';
+            appendLog('Console cleared.', 'info');
+        }
+
+        async function triggerOrder(productId, quantity, price) {
+            const startTime = performance.now();
+            appendLog(`POST /api/v1/orders - Requesting productId=${productId}, quantity=${quantity}...`, 'info');
+
+            try {
+                const response = await fetch('/api/v1/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: quantity,
+                        pricePerUnit: price,
+                        customerEmail: 'dashboard-user@example.com'
+                    })
+                });
+
+                const latency = Math.round(performance.now() - startTime);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const logType = data.status === 'FULFILLED' ? 'success' : 'warning';
+                    appendLog(`[${latency}ms] Status ${response.status} ${data.status}: ${data.message} (OrderNum: ${data.orderNumber}, Total: $${data.totalPrice})`, logType);
+                } else {
+                    appendLog(`[${latency}ms] Status ${response.status} Error: ${JSON.stringify(data)}`, 'danger');
+                }
+            } catch (err) {
+                const latency = Math.round(performance.now() - startTime);
+                appendLog(`[${latency}ms] Network/Fetch Error: ${err.message}`, 'danger');
+            }
+        }
+
+        async function checkHealth() {
+            const startTime = performance.now();
+            appendLog('GET /api/v1/orders/health - Checking system uptime...', 'info');
+
+            try {
+                const response = await fetch('/api/v1/orders/health');
+                const latency = Math.round(performance.now() - startTime);
+                const data = await response.json();
+                appendLog(`[${latency}ms] Health Check Response: ${JSON.stringify(data)}`, 'success');
+            } catch (err) {
+                appendLog(`Error checking health: ${err.message}`, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

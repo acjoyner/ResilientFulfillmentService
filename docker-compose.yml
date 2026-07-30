@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL (Relational SQL Persistence)
+  postgres:
+    image: postgres:15-alpine
+    container_name: fulfillment-postgres
+    environment:
+      POSTGRES_DB: fulfillmentdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fulfillmentdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis (NoSQL Caching Layer)
+  redis:
+    image: redis:7-alpine
+    container_name: fulfillment-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. Resilient Fulfillment Microservice (Java / Linux Runtime)
+  fulfillment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fulfillment-app
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: "jdbc:postgresql://postgres:5432/fulfillmentdb"
+      DB_DRIVER: "org.postgresql.Driver"
+      DB_USER: "postgres"
+      DB_PASSWORD: "postgrespassword"
+      DB_DIALECT: "org.hibernate.dialect.PostgreSQLDialect"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

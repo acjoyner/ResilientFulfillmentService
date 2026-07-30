@@ -1,0 +1,27 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### System Files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### IDE Files ###
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+### Application Logs ###
+*.log
+logs/
+target/logs/
+system_report_*.txt
