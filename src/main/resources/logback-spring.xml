@@ -11,9 +11,9 @@
 
     <!-- Rolling File Appender for local / RHEL log directory (/var/log/fulfillment-service) -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>target/logs/resilient-fulfillment.log</file>
+        <file>/var/log/fulfillment-service/resilient-fulfillment.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>target/logs/resilient-fulfillment-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>/var/log/fulfillment-service/resilient-fulfillment-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>

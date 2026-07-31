@@ -33,7 +33,25 @@ services:
       timeout: 5s
       retries: 5
 
-  # 3. Resilient Fulfillment Microservice (Java / Linux Runtime)
+  # 3. Splunk Enterprise (Local Log Aggregation & Analytics Dashboard)
+  splunk:
+    image: splunk/splunk:latest
+    platform: linux/amd64
+    container_name: fulfillment-splunk
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_GENERAL_TERMS=--accept-sgt-current-at-splunk-com
+      - SPLUNK_PASSWORD=SplunkPassword123
+    ports:
+      - "8000:8000"
+      - "8088:8088"
+    networks:
+      - fulfillment-network
+    volumes:
+      - splunk_data:/opt/splunk/var
+      - app_logs:/var/log/fulfillment-service
+
+  # 4. Resilient Fulfillment Microservice (Java / Linux Runtime)
   fulfillment-service:
     build:
       context: .
@@ -41,6 +59,8 @@ services:
     container_name: fulfillment-app
     ports:
       - "8080:8080"
+    volumes:
+      - app_logs:/var/log/fulfillment-service
     environment:
       DB_URL: "jdbc:postgresql://postgres:5432/fulfillmentdb"
       DB_DRIVER: "org.postgresql.Driver"
@@ -59,6 +79,8 @@ services:
 
 volumes:
   postgres_data:
+  splunk_data:
+  app_logs:
 
 networks:
   fulfillment-network:
