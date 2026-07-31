@@ -459,11 +459,42 @@
     </header>
 
     <main>
+        <!-- Custom Order Placement Form Card -->
+        <section class="card full-width">
+            <div class="card-header">
+                <div class="card-title">
+                    <span class="card-title-icon">🛒</span> Place Custom Order
+                </div>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Submit Custom Payloads to POST /api/v1/orders</span>
+            </div>
+            <form id="customOrderForm" onsubmit="handleCustomOrder(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; align-items: end;">
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Product ID</label>
+                    <input type="text" id="customProductId" value="PROD-100" placeholder="e.g. PROD-100, PROD-FAIL, PROD-SLOW" required style="background: rgba(30, 41, 67, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: var(--font-main); font-size: 0.9rem; outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Quantity</label>
+                    <input type="number" id="customQuantity" value="1" min="1" required style="background: rgba(30, 41, 67, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: var(--font-main); font-size: 0.9rem; outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Price Per Unit ($)</label>
+                    <input type="number" id="customPrice" value="49.99" step="0.01" min="0.01" required style="background: rgba(30, 41, 67, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: var(--font-main); font-size: 0.9rem; outline: none;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Customer Email</label>
+                    <input type="email" id="customEmail" value="customer@example.com" required style="background: rgba(30, 41, 67, 0.6); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.75rem 1rem; color: var(--text-primary); font-family: var(--font-main); font-size: 0.9rem; outline: none;">
+                </div>
+                <button type="submit" style="background: var(--accent-gradient); border: none; border-radius: 10px; padding: 0.75rem 1.5rem; color: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: transform 0.2s ease; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);">
+                    🚀 Submit Order
+                </button>
+            </form>
+        </section>
+
         <!-- Interactive Controls Card -->
         <section class="card">
             <div class="card-header">
                 <div class="card-title">
-                    <span class="card-title-icon">🎮</span> Simulation & Scenario Testing
+                    <span class="card-title-icon">🎮</span> Quick Scenario Presets
                 </div>
                 <span style="font-size: 0.75rem; color: var(--text-muted);">Hover controls for Learning Objectives</span>
             </div>
@@ -537,7 +568,7 @@
                     <span>[SYSTEM LOG STREAM]</span>
                     <span>Format: JSON / MDC Trace</span>
                 </div>
-                <div class="console-log info">Console initialized. Ready to execute interactive test scenarios. Click any control button to test endpoints.</div>
+                <div class="console-log info">Console initialized. Ready to execute interactive test scenarios. Submit custom orders or click preset buttons.</div>
             </div>
         </section>
 
@@ -547,10 +578,18 @@
                 <div class="card-title">
                     <span class="card-title-icon">🔗</span> Quick-Access Dashboards & Endpoints
                 </div>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Direct Links to Observability Metrics</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Direct Links to Observability & Analytics Engines</span>
             </div>
             <div class="links-grid">
                 
+                <a href="http://localhost:8000" target="_blank" class="link-card">
+                    <div class="link-icon">🪵</div>
+                    <div class="link-text">
+                        <h4>Splunk Enterprise UI</h4>
+                        <p>http://localhost:8000</p>
+                    </div>
+                </a>
+
                 <a href="/actuator/prometheus" target="_blank" class="link-card">
                     <div class="link-icon">📊</div>
                     <div class="link-text">
@@ -647,6 +686,43 @@
         function clearConsole() {
             consoleEl.innerHTML = '<div class="console-header"><span>[SYSTEM LOG STREAM]</span><span>Format: JSON / MDC Trace</span></div>';
             appendLog('Console cleared.', 'info');
+        }
+
+        async function handleCustomOrder(event) {
+            event.preventDefault();
+            const productId = document.getElementById('customProductId').value.trim();
+            const quantity = parseInt(document.getElementById('customQuantity').value);
+            const price = parseFloat(document.getElementById('customPrice').value);
+            const email = document.getElementById('customEmail').value.trim();
+
+            const startTime = performance.now();
+            appendLog(`POST /api/v1/orders - Submitting custom order (ProductId: ${productId}, Qty: ${quantity}, Price: $${price}, Email: ${email})...`, 'info');
+
+            try {
+                const response = await fetch('/api/v1/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: quantity,
+                        pricePerUnit: price,
+                        customerEmail: email
+                    })
+                });
+
+                const latency = Math.round(performance.now() - startTime);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const logType = data.status === 'FULFILLED' ? 'success' : 'warning';
+                    appendLog(`[${latency}ms] Status ${response.status} ${data.status}: ${data.message} (OrderNum: ${data.orderNumber}, Total: $${data.totalPrice})`, logType);
+                } else {
+                    appendLog(`[${latency}ms] Status ${response.status} Error: ${JSON.stringify(data)}`, 'danger');
+                }
+            } catch (err) {
+                const latency = Math.round(performance.now() - startTime);
+                appendLog(`[${latency}ms] Network/Fetch Error: ${err.message}`, 'danger');
+            }
         }
 
         async function triggerOrder(productId, quantity, price) {
