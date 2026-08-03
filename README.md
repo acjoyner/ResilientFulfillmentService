@@ -4,6 +4,26 @@ A production-grade, highly available microservice built with **Java 17 / Spring 
 
 ---
 
+## 🔗 Ecosystem Cooperation: NexaBank Platform Integration
+
+This repository operates as part of the unified **NexaBank Global Financial Enterprise Ecosystem**, cooperating directly with the **NexaBank Platform**:
+
+👉 **[NexaBank Platform Repository (https://github.com/acjoyner/nexabank)](https://github.com/acjoyner/nexabank)**
+
+### Multi-Service Infrastructure Matrix
+
+| Ecosystem Component | Repository | Host Port | Primary Function |
+| :--- | :--- | :--- | :--- |
+| **Resilient Fulfillment Service** | [ResilientFulfillmentService](https://github.com/acjoyner/ResilientFulfillmentService) | `:8080` | Order fulfillment, Resilience4j fault tolerance & Splunk log aggregation. |
+| **Google ADK AI Support Agents** | [agents](https://github.com/acjoyner/ResilientFulfillmentService/tree/main/agents) | — | Autonomous multi-agent AI operations network performing cross-service health checks & STAR triage. |
+| **NexaBank API Gateway** | [nexabank](https://github.com/acjoyner/nexabank) | `:8080` | Ingress JWT validation, rate limiting, and request correlation. |
+| **NexaBank Account Service** | [nexabank](https://github.com/acjoyner/nexabank) | `:8081` | Customer accounts, balances, and authentication. |
+| **NexaBank Transaction Service** | [nexabank](https://github.com/acjoyner/nexabank) | `:8082` | Deposits, withdrawals, and inter-bank transfers (Saga pattern). |
+| **NexaBank Notification Service** | [nexabank](https://github.com/acjoyner/nexabank) | `:8083` | Kafka consumer & ActiveMQ JMS notification dispatching. |
+| **NexaBank Loan Service** | [nexabank](https://github.com/acjoyner/nexabank) | `:8084` | Loan applications and AI credit scoring engine. |
+
+---
+
 ## 🎨 Interactive Frontend Dashboard
 
 When the application is running, open your browser and navigate to:
