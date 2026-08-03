@@ -76,3 +76,34 @@ def get_prometheus_metrics() -> str:
         return f"HTTP {response.status_code}"
     except Exception as e:
         return f"Error fetching metrics: {str(e)}"
+
+
+NEXABANK_SERVICES = {
+    "api-gateway": "http://localhost:8080/actuator/health",
+    "account-service": "http://localhost:8081/actuator/health",
+    "transaction-service": "http://localhost:8082/actuator/health",
+    "notification-service": "http://localhost:8083/actuator/health",
+    "loan-service": "http://localhost:8084/actuator/health"
+}
+
+def check_nexabank_microservices_health() -> str:
+    """
+    Performs multi-service health checks across all NexaBank Platform microservice ports
+    (Gateway 8080, Account 8081, Transaction 8082, Notification 8083, Loan 8084).
+    """
+    results = {}
+    for svc_name, url in NEXABANK_SERVICES.items():
+        try:
+            resp = requests.get(url, timeout=3)
+            results[svc_name] = {
+                "url": url,
+                "status_code": resp.status_code,
+                "health": resp.json() if resp.status_code == 200 else resp.text[:100]
+            }
+        except Exception as e:
+            results[svc_name] = {
+                "url": url,
+                "status": "UNREACHABLE",
+                "error": str(e)
+            }
+    return json.dumps(results, indent=2)

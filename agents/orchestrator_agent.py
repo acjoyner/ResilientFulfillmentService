@@ -18,6 +18,7 @@ except ImportError:
     SDK_AVAILABLE = False
 
 from fulfillment_agent import get_fulfillment_agent_config, check_fulfillment_health, inspect_recent_app_logs, get_prometheus_metrics
+from tools.fulfillment_tools import check_nexabank_microservices_health
 from inventory_agent import get_inventory_agent_config, check_circuit_breaker_status, simulate_circuit_breaker_trip
 from database_agent import get_database_agent_config, check_database_pool_metrics, check_redis_cache_status
 
@@ -30,31 +31,34 @@ You manage a network of specialized L2/L3 support agents:
 
 Your Goal:
 During P1/P2 production incidents or routine health checks:
-1. Run diagnostic checks across all subagent tools.
+1. Run diagnostic checks across all subagent tools and NexaBank Platform endpoints (Ports 8080-8084).
 2. Synthesize findings into a clear STAR-format Incident Triage Report.
 3. Recommend immediate mitigation steps and long-term Root Cause Analysis (RCA) fixes.
 """
 
 async def run_orchestrated_triage():
     """
-    Executes an incident triage run across all microservice diagnostic tools.
+    Executes an incident triage run across all microservice diagnostic tools and NexaBank platform services.
     """
     print("========================================================================")
-    print(" 🚀 NEXABANK ENTERPRISE AI SUPPORT ORCHESTRATOR (Google ADK) ")
+    print(" 🚀 NEXABANK GLOBAL FINANCIAL ENTERPRISE AI SUPPORT ORCHESTRATOR ")
     print("========================================================================")
     print(f"Google Antigravity SDK Available: {SDK_AVAILABLE}")
     print("------------------------------------------------------------------------")
     
-    # Run diagnostic tools directly across microservices
-    print("[1/3] Querying Fulfillment App Support Agent...")
+    print("[1/4] Querying Fulfillment App Support Agent...")
     app_health = check_fulfillment_health()
     print(f"App Health Result: {app_health[:200]}...")
+
+    print("\n[2/4] Querying NexaBank Platform Suite (Ports 8080-8084)...")
+    nexabank_health = check_nexabank_microservices_health()
+    print(f"NexaBank Suite Health: {nexabank_health[:250]}...")
     
-    print("\n[2/3] Querying Inventory & Resilience Support Agent...")
+    print("\n[3/4] Querying Inventory & Resilience Support Agent...")
     circuit_status = check_circuit_breaker_status()
     print(f"Circuit Breaker Status: {circuit_status[:200]}...")
     
-    print("\n[3/3] Querying Database & Redis Diagnostic Agent...")
+    print("\n[4/4] Querying Database & Redis Diagnostic Agent...")
     db_metrics = check_database_pool_metrics()
     redis_status = check_redis_cache_status()
     print(f"DB Metrics: {db_metrics[:150]}...")
@@ -65,7 +69,7 @@ async def run_orchestrated_triage():
     print("------------------------------------------------------------------------")
     report = {
         "Incident_Status": "SYSTEM_HEALTHY" if "UP" in app_health else "DEGRADED",
-        "Target_Environment": "NexaBank Global Financial - ResilientFulfillmentService",
+        "Target_Environment": "NexaBank Global Financial Platform",
         "Subagents_Engaged": [
             "FulfillmentAppSupportAgent",
             "InventoryResilienceSupportAgent",
@@ -73,6 +77,7 @@ async def run_orchestrated_triage():
         ],
         "Diagnostic_Summary": {
             "Application_Status": json.loads(app_health) if app_health.startswith("{") else app_health,
+            "NexaBank_Platform_Services": json.loads(nexabank_health) if nexabank_health.startswith("{") else nexabank_health,
             "Resilience_Circuit_Breaker": json.loads(circuit_status) if circuit_status.startswith("{") else circuit_status,
             "Redis_Cache": json.loads(redis_status) if redis_status.startswith("{") else redis_status
         }
