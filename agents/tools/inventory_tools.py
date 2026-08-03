@@ -39,7 +39,7 @@ def simulate_circuit_breaker_trip(product_id: str = "PROD-FAIL-999") -> str:
         "productId": product_id,
         "quantity": 1,
         "price": 99.99,
-        "customerEmail": "circuit-breaker-test@bankofamerica.com"
+        "customerEmail": "circuit-breaker-test@nexabank.com"
     }
     try:
         response = requests.post(url, json=payload, timeout=5)

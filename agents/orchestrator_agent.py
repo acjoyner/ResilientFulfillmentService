@@ -1,6 +1,6 @@
 """
 Enterprise AI Support Orchestrator
-Bank of America Java Application Support & Observability Platform
+NexaBank Global Financial Java Application Support & Observability Platform
 Powered by Google Antigravity (AGY) SDK
 """
 
@@ -22,7 +22,7 @@ from inventory_agent import get_inventory_agent_config, check_circuit_breaker_st
 from database_agent import get_database_agent_config, check_database_pool_metrics, check_redis_cache_status
 
 ORCHESTRATOR_SYSTEM_INSTRUCTIONS = """
-You are the Senior Enterprise Application Support Orchestrator for Bank of America.
+You are the Senior Enterprise Application Support Orchestrator for NexaBank Global Financial.
 You manage a network of specialized L2/L3 support agents:
 1. FulfillmentAppSupportAgent (Java / Spring Boot app health & log analysis)
 2. InventoryResilienceSupportAgent (Resilience4j Circuit Breakers & Bulkhead concurrency)
@@ -40,7 +40,7 @@ async def run_orchestrated_triage():
     Executes an incident triage run across all microservice diagnostic tools.
     """
     print("========================================================================")
-    print(" 🚀 BANK OF AMERICA ENTERPRISE AI SUPPORT ORCHESTRATOR (Google ADK) ")
+    print(" 🚀 NEXABANK ENTERPRISE AI SUPPORT ORCHESTRATOR (Google ADK) ")
     print("========================================================================")
     print(f"Google Antigravity SDK Available: {SDK_AVAILABLE}")
     print("------------------------------------------------------------------------")
@@ -65,7 +65,7 @@ async def run_orchestrated_triage():
     print("------------------------------------------------------------------------")
     report = {
         "Incident_Status": "SYSTEM_HEALTHY" if "UP" in app_health else "DEGRADED",
-        "Target_Environment": "Bank of America - ResilientFulfillmentService",
+        "Target_Environment": "NexaBank Global Financial - ResilientFulfillmentService",
         "Subagents_Engaged": [
             "FulfillmentAppSupportAgent",
             "InventoryResilienceSupportAgent",
