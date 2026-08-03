@@ -26,3 +26,5 @@ logs/
 target/logs/
 system_report_*.txt
 INTERVIEW_PREP_CHEATSHEET.md
+__pycache__/
+*.pyc
