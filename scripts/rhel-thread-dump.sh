@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==============================================================================
 # RHEL 8/9 High CPU & Thread Dump Diagnostic Tool
-# Bank of America Enterprise Java Support Script
+# NexaBank Global Financial Enterprise Java Support Script
 # ==============================================================================
 
 SERVICE_NAME="resilient-fulfillment"
