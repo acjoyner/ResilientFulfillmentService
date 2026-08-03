@@ -69,8 +69,6 @@ services:
       DB_DIALECT: "org.hibernate.dialect.PostgreSQLDialect"
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
-    volumes:
-      - app_logs:/var/log/fulfillment-service
     networks:
       - fulfillment-network
     depends_on:
